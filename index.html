@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relatório de Vendas — Junho</title>
+<style>
+  :root{
+    --blue-head:#4472c4;
+    --blue-cell:#dbe5f4;
+    --orange-head:#ed7d31;
+    --orange-cell:#fce4d6;
+    --red-head:#ff0000;
+    --red-cell-light:#fbe4e4;
+    --grey-cell:#f2f2f2;
+    --border:#bdbdbd;
+    --text:#1a1a1a;
+    --focus:#1a73e8;
+  }
+  *{box-sizing:border-box;}
+  body{
+    font-family:"Segoe UI", Arial, sans-serif;
+    background:#f5f6f8;
+    color:var(--text);
+    margin:0;
+    padding:24px;
+    font-size:14px;
+  }
+  h1{
+    font-size:18px;
+    margin:0 0 16px 0;
+  }
+  .month-badge{
+    display:inline-block;
+    background:var(--red-head);
+    color:#fff;
+    font-size:32px;
+    font-weight:800;
+    letter-spacing:1px;
+    padding:10px 28px;
+    border-radius:10px;
+    margin:0 0 18px 0;
+    box-shadow:0 2px 6px rgba(0,0,0,0.2);
+  }
+  .tabs{
+    display:flex;
+    gap:6px;
+    margin-bottom:20px;
+    border-bottom:2px solid #ddd;
+  }
+  .tab-btn{
+    font:inherit;
+    padding:10px 20px;
+    border:none;
+    background:transparent;
+    font-weight:700;
+    font-size:14px;
+    color:#666;
+    cursor:pointer;
+    border-bottom:3px solid transparent;
+    margin-bottom:-2px;
+  }
+  .tab-btn:hover{
+    color:var(--red-head);
+    background:#fbe4e4;
+  }
+  .tab-btn.active{
+    color:var(--red-head);
+    border-bottom-color:var(--red-head);
+  }
+  .tab-btn:focus-visible{
+    outline:2px solid var(--focus);
+    outline-offset:2px;
+  }
+  .layout{
+    display:flex;
+    flex-wrap:wrap;
+    gap:24px;
+    align-items:flex-start;
+  }
+  .table-scroll{
+    max-width:100%;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    border-radius:4px;
+  }
+  table{
+    border-collapse:collapse;
+    background:#fff;
+    box-shadow:0 1px 3px rgba(0,0,0,0.15);
+  }
+  caption{
+    text-align:left;
+    font-weight:600;
+    padding:6px 4px;
+    font-size:13px;
+  }
+  th,td{
+    border:1px solid var(--border);
+    padding:5px 10px;
+    text-align:center;
+    white-space:nowrap;
+  }
+  th{
+    font-weight:700;
+  }
+  #main-table thead tr.group-row th{
+    color:#fff;
+    font-size:13px;
+  }
+  #main-table thead tr.col-row th{
+    font-size:12.5px;
+  }
+  .th-data{
+    background:#fff;
+    color:var(--text);
+    text-align:left;
+  }
+  .grp-assai{background:var(--blue-head);}
+  .grp-ifood-part{background:var(--orange-head);}
+  .grp-ifood{background:var(--red-head);}
+
+  .cell-data{
+    text-align:left;
+    font-weight:600;
+    background:#fff;
+  }
+  .cell-assai{background:var(--blue-cell);}
+  .cell-part{background:var(--orange-cell); color:#c00000; font-weight:600;}
+  .cell-ifood-venda{background:var(--grey-cell); color:#c00000;}
+  .cell-pedidos{background:var(--grey-cell);}
+  .cell-tkt{background:var(--red-cell-light); color:#c00000;}
+
+  tr.total-row td, tr.total-row th{
+    font-weight:700;
+    background:#eef1f5;
+    border-top:2px solid #666;
+  }
+  tr.total-row td.cell-assai{background:#cddaf0;}
+  tr.total-row td.cell-part{background:#f8d7bd;}
+  tr.total-row td.cell-ifood-venda,
+  tr.total-row td.cell-pedidos{background:#e2e2e2;}
+  tr.total-row td.cell-tkt{background:#f6cfcf;}
+
+  [contenteditable="true"]{
+    cursor:text;
+    border-radius:3px;
+  }
+  [contenteditable="true"]:hover{
+    outline:1px dashed #999;
+  }
+  [contenteditable="true"]:focus{
+    outline:2px solid var(--focus);
+    outline-offset:-1px;
+    background-color:#fffbcc !important;
+  }
+  [contenteditable="true"]:focus[aria-invalid="true"],
+  [contenteditable="true"][aria-invalid="true"]{
+    outline:2px solid #d32f2f;
+    background-color:#ffe0e0 !important;
+  }
+
+  /* Células calculadas automaticamente — somente leitura */
+  .cell-locked{
+    cursor:not-allowed;
+    position:relative;
+    color:#6a6a6a !important;
+  }
+  .cell-locked::after{
+    content:"🔒";
+    font-size:9px;
+    position:absolute;
+    top:1px;
+    right:2px;
+    opacity:0.55;
+  }
+  .cell-locked:hover{
+    outline:1px solid #c9c9c9;
+  }
+
+  /* Summary box */
+  .summary{
+    border-collapse:collapse;
+    box-shadow:0 1px 3px rgba(0,0,0,0.15);
+  }
+  .summary caption{font-weight:700;}
+  .summary th{
+    background:var(--red-head);
+    color:#fff;
+    text-align:left;
+    padding:8px 14px;
+  }
+  .summary td{
+    background:#fbe4e4;
+    text-align:right;
+    padding:8px 14px;
+    font-weight:700;
+    color:var(--text);
+  }
+
+  .instructions{
+    max-width:640px;
+    margin-bottom:18px;
+    font-size:13px;
+    line-height:1.5;
+    background:#eef4ff;
+    border:1px solid #c6d9f5;
+    border-radius:6px;
+    padding:12px 16px;
+  }
+  .controls{
+    margin-bottom:16px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  button{
+    font:inherit;
+    padding:8px 14px;
+    border-radius:6px;
+    border:1px solid #999;
+    background:#fff;
+    cursor:pointer;
+  }
+  button:hover{background:#f0f0f0;}
+  button:focus-visible{outline:2px solid var(--focus); outline-offset:2px;}
+
+  .month-label-inline{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-weight:600;
+    font-size:13px;
+  }
+  .month-label-inline input[type="month"],
+  .month-label-inline input[type="number"]{
+    font:inherit;
+    padding:6px 8px;
+    border-radius:6px;
+    border:1px solid #999;
+    width:100px;
+  }
+  .month-label-inline input[type="month"]:focus-visible,
+  .month-label-inline input[type="number"]:focus-visible{
+    outline:2px solid var(--focus);
+    outline-offset:1px;
+  }
+
+  .sr-only{
+    position:absolute;
+    width:1px;height:1px;
+    padding:0;margin:-1px;
+    overflow:hidden;
+    clip:rect(0,0,0,0);
+    white-space:nowrap;border:0;
+  }
+
+  .save-status{
+    font-size:12.5px;
+    font-weight:700;
+    padding:8px 4px;
+    display:inline-flex;
+    align-items:center;
+    color:#666;
+  }
+  .save-status.saving{color:#b8860b;}
+  .save-status.saved{color:#2e7d32;}
+  .save-status.error{color:#c62828;}
+
+  tr.weekend-row td.cell-data,
+  tr.weekend-row th.cell-data{
+    background:#f0f0f5;
+  }
+  tr.weekend-row .cell-assai{background:#c9d6ee;}
+  tr.weekend-row .cell-part{background:#f6d3b3;}
+  tr.weekend-row .cell-ifood-venda,
+  tr.weekend-row .cell-pedidos{background:#e6e6e6;}
+  tr.weekend-row .cell-tkt{background:#f5c3c3;}
+
+  tr.today-row th.cell-data{
+    position:relative;
+    font-weight:800;
+  }
+  tr.today-row th.cell-data::before{
+    content:"●";
+    color:var(--red-head);
+    margin-right:5px;
+  }
+
+  /* ---- Meta / progresso ---- */
+  .goal-box{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:12px 16px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.15);
+    max-width:340px;
+  }
+  .goal-box h3{margin:0 0 8px 0; font-size:13px; text-transform:uppercase; letter-spacing:.03em;}
+  .goal-box .goal-input-row{display:flex; align-items:center; gap:8px; margin-bottom:10px;}
+  .goal-box input[type="text"]{
+    font:inherit; padding:6px 8px; border-radius:6px; border:1px solid #999; width:140px;
+  }
+  .goal-bar-track{
+    width:100%; height:14px; background:#eee; border-radius:7px; overflow:hidden; border:1px solid #ddd;
+  }
+  .goal-bar-fill{
+    height:100%; background:linear-gradient(90deg,#ed7d31,#ff0000); width:0%; transition:width .3s;
+  }
+  .goal-bar-fill.over{background:linear-gradient(90deg,#2e7d32,#66bb6a);}
+  .goal-meta-text{font-size:12px; color:#555; margin-top:6px;}
+
+  /* ---- Sincronização ---- */
+  .sync-panel{
+    background:#fff; border:1px solid var(--border); border-radius:8px;
+    padding:12px 16px; box-shadow:0 1px 3px rgba(0,0,0,0.15); max-width:420px; font-size:13px;
+  }
+  .sync-panel h3{margin:0 0 8px 0; font-size:13px; text-transform:uppercase; letter-spacing:.03em;}
+  .sync-panel label{display:block; margin-bottom:8px; font-weight:600;}
+  .sync-panel input[type="text"], .sync-panel input[type="password"]{
+    font:inherit; width:100%; padding:6px 8px; border-radius:6px; border:1px solid #999; margin-top:3px;
+  }
+  .sync-status{font-weight:700; margin-bottom:8px; display:block;}
+  .sync-status.on{color:#2e7d32;}
+  .sync-status.off{color:#777;}
+
+  /* ---- Log de edições ---- */
+  .log-panel{
+    background:#fff; border:1px solid var(--border); border-radius:8px;
+    padding:12px 16px; box-shadow:0 1px 3px rgba(0,0,0,0.15); max-width:420px; max-height:260px; overflow:auto;
+  }
+  .log-panel h3{margin:0 0 8px 0; font-size:13px; text-transform:uppercase; letter-spacing:.03em;}
+  .log-entry{font-size:12px; padding:5px 0; border-bottom:1px solid #eee; line-height:1.4;}
+  .log-entry:last-child{border-bottom:none;}
+  .log-entry b{color:var(--red-head);}
+
+  /* ---- Alerta de valor fora do padrão (outlier) ---- */
+  [contenteditable="true"].cell-outlier{
+    background-color:#fff3cd !important;
+    outline:1px dashed #d68a00;
+  }
+  .outlier-flag{
+    font-size:9px; color:#d68a00; margin-left:3px;
+  }
+
+  .user-badge{
+    font-size:12.5px; color:#555; display:inline-flex; align-items:center; gap:6px;
+  }
+  .user-badge button{padding:3px 8px; font-size:11.5px;}
+
+  @media (max-width:640px){
+    body{padding:12px 10px;}
+    h1{font-size:16px;}
+
+    /* Abas ocupam a largura toda, mais fáceis de tocar */
+    .tabs{gap:2px;}
+    .tab-btn{flex:1; padding:10px 6px; font-size:12.5px; text-align:center;}
+
+    .month-badge{font-size:20px; padding:8px 16px; width:100%; text-align:center;}
+
+    /* Controles empilhados, botões em largura total (alvo de toque maior) */
+    .controls{flex-direction:column; align-items:stretch; gap:8px;}
+    .controls button, .sync-panel .controls button{
+      width:100%;
+      min-height:40px;
+      font-size:13px;
+    }
+    .month-label-inline{flex-wrap:wrap;}
+    .month-label-inline input[type="month"],
+    .month-label-inline input[type="number"]{
+      flex:1;
+      width:auto;
+      min-height:40px;
+    }
+    .save-status{padding:6px 0;}
+
+    /* Layout empilha: tabela primeiro, cartões (resumo/meta/log) abaixo, largura total */
+    .layout{flex-direction:column; gap:16px;}
+    .layout > *{width:100%; max-width:100%;}
+
+    /* Tabelas: rolagem horizontal com a coluna de data fixa para manter contexto */
+    table{font-size:12px;}
+    th,td{padding:7px 9px; white-space:nowrap;}
+    #main-table th.cell-data, #main-table td.cell-data, #main-table th.th-data,
+    #annual-table th.cell-data, #annual-table td.cell-data, #annual-table th.th-data{
+      position:sticky;
+      left:0;
+      z-index:2;
+      box-shadow:2px 0 4px rgba(0,0,0,0.08);
+    }
+    #main-table thead tr.group-row th.th-data,
+    #main-table thead tr.col-row th.th-data,
+    #annual-table thead tr.group-row th.th-data,
+    #annual-table thead tr.col-row th.th-data{
+      z-index:3;
+    }
+    tr.total-row th.cell-data{background:#eef1f5;}
+
+    .summary{width:100%;}
+    .summary th, .summary td{padding:9px 12px; font-size:13px;}
+
+    .goal-box, .sync-panel, .log-panel{max-width:100%; width:100%;}
+    .goal-input-row{flex-wrap:wrap;}
+    .goal-input-row input[type="text"]{flex:1; min-width:0;}
+
+    .user-badge{
+      flex-wrap:wrap;
+      width:100%;
+      justify-content:space-between;
+      gap:6px 10px;
+      margin-bottom:12px;
+    }
+    .user-badge button{min-height:34px; padding:6px 10px;}
+
+    .instructions{max-width:100%; font-size:12.5px;}
+
+    #annual-chart{max-width:100%;}
+  }
+</style>
+</head>
+<body>
+
+<h1>Relatório de Vendas — Assaí × iFood</h1>
+
+<div class="user-badge" id="user-badge-wrap">
+  Lançando como: <strong id="user-name-display">—</strong>
+  <button type="button" id="btn-change-user">Trocar nome</button>
+  <button type="button" id="btn-undo" title="Desfazer última edição (Ctrl+Z)">↩️ Desfazer</button>
+</div>
+
+<div class="tabs" role="tablist" aria-label="Seções do relatório">
+  <button type="button" role="tab" id="tab-daily" aria-selected="true" aria-controls="panel-daily" class="tab-btn active">📅 Relatório Diário</button>
+  <button type="button" role="tab" id="tab-annual" aria-selected="false" aria-controls="panel-annual" tabindex="-1" class="tab-btn">📊 Resumo Anual</button>
+</div>
+
+<div id="panel-daily" role="tabpanel" aria-labelledby="tab-daily">
+
+<div class="month-badge" id="month-badge">MÊS</div>
+
+<div class="controls">
+  <label for="month-picker" class="month-label-inline">Mês/Ano:
+    <input type="month" id="month-picker">
+  </label>
+  <button type="button" id="btn-apply-month">Aplicar mês</button>
+  <button type="button" id="btn-current-month">Mês atual</button>
+  <button type="button" id="btn-recalc">Recalcular totais</button>
+  <button type="button" id="btn-print">Imprimir / salvar como PDF</button>
+  <button type="button" id="btn-export-json">💾 Exportar backup (JSON)</button>
+  <button type="button" id="btn-import-json">📂 Importar backup</button>
+  <button type="button" id="btn-export-csv">📄 Exportar CSV</button>
+  <input type="file" id="file-import" accept="application/json" class="sr-only">
+  <span id="save-status" class="save-status" role="status"></span>
+  <button type="button" id="btn-toggle-sync">🔗 Sincronização entre dispositivos</button>
+</div>
+
+<div class="sync-panel" id="sync-panel" hidden>
+  <h3>Sincronização (Firebase Realtime Database)</h3>
+  <span class="sync-status off" id="sync-status-text">💻 Somente local (não sincronizado)</span>
+  <label>URL do Realtime Database
+    <input type="text" id="sync-db-url" placeholder="https://seu-projeto-default-rtdb.firebaseio.com">
+  </label>
+  <label>Auth/Secret (opcional, se o banco tiver regras de leitura/escrita)
+    <input type="password" id="sync-secret" placeholder="deixe em branco se as regras forem públicas">
+  </label>
+  <div class="controls" style="margin-bottom:0;">
+    <button type="button" id="btn-sync-save-config">Salvar e conectar</button>
+    <button type="button" id="btn-sync-now">Sincronizar agora</button>
+    <button type="button" id="btn-sync-disconnect">Desconectar</button>
+  </div>
+</div>
+
+<div class="layout">
+
+<div class="table-scroll">
+<table id="main-table" aria-describedby="instrucoes">
+  <caption id="table-caption">Vendas diárias — comparação Assaí e iFood</caption>
+  <thead>
+    <tr class="group-row">
+      <th scope="col" class="th-data"></th>
+      <th scope="colgroup" class="grp-assai">ASSAÍ</th>
+      <th scope="colgroup" class="grp-ifood-part">IFOOD / ASSAÍ</th>
+      <th scope="colgroup" class="grp-ifood" colspan="3">IFOOD</th>
+    </tr>
+    <tr class="col-row">
+      <th scope="col" class="th-data" id="month-label">MÊS</th>
+      <th scope="col" class="grp-assai">VENDA BRUTA</th>
+      <th scope="col" class="grp-ifood-part">PARTICIPAÇÃO</th>
+      <th scope="col" class="grp-ifood">VENDA BRUTA</th>
+      <th scope="col" class="grp-ifood">PEDIDOS</th>
+      <th scope="col" class="grp-ifood">TKT.MÉDIO</th>
+    </tr>
+  </thead>
+  <tbody id="table-body">
+    <!-- rows injected by JS -->
+  </tbody>
+  <tfoot>
+    <tr class="total-row">
+      <th scope="row" class="cell-data">TOTAL:</th>
+      <td class="cell-assai" id="tot-assai" contenteditable="false">R$ 17.745.870,26</td>
+      <td class="cell-part" id="tot-part" contenteditable="false">13,97%</td>
+      <td class="cell-ifood-venda" id="tot-ifood" contenteditable="false">R$ 2.479.568,48</td>
+      <td class="cell-pedidos" id="tot-pedidos" contenteditable="false">10016</td>
+      <td class="cell-tkt" id="tot-tkt" contenteditable="false">R$ 247,56</td>
+    </tr>
+  </tfoot>
+</table>
+</div>
+
+<table class="summary" aria-label="Resumo geral do mês">
+  <caption class="sr-only">Resumo geral de vendas do mês</caption>
+  <tbody>
+    <tr>
+      <th scope="row">VENDA TOTAL</th>
+      <td id="sum-venda">R$ 2.479.568,48</td>
+    </tr>
+    <tr>
+      <th scope="row">MÉDIA</th>
+      <td id="sum-media">R$ 247,56</td>
+    </tr>
+    <tr>
+      <th scope="row">PEDIDOS</th>
+      <td id="sum-pedidos">10016</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="goal-box">
+  <h3>Meta do mês (venda iFood)</h3>
+  <div class="goal-input-row">
+    <input type="text" id="goal-input" placeholder="ex: 3000000,00" inputmode="decimal">
+    <button type="button" id="btn-save-goal">Salvar meta</button>
+  </div>
+  <div class="goal-bar-track"><div class="goal-bar-fill" id="goal-bar-fill"></div></div>
+  <div class="goal-meta-text" id="goal-meta-text">Defina uma meta para acompanhar o progresso.</div>
+</div>
+
+<div class="log-panel">
+  <h3>Log de edições recentes</h3>
+  <div id="log-list"></div>
+</div>
+
+</div>
+</div>
+
+<div id="panel-annual" role="tabpanel" aria-labelledby="tab-annual" hidden>
+
+<div class="month-badge" id="year-badge">ANO</div>
+
+<div class="controls">
+  <label for="year-picker" class="month-label-inline">Ano:
+    <input type="number" id="year-picker" min="2000" max="2100" step="1">
+  </label>
+  <button type="button" id="btn-apply-year">Aplicar ano</button>
+  <button type="button" id="btn-current-year">Ano atual</button>
+</div>
+
+<div class="layout">
+
+<div class="table-scroll">
+<table id="annual-table">
+  <caption id="annual-caption">Vendas somadas por mês — comparação Assaí e iFood</caption>
+  <thead>
+    <tr class="group-row">
+      <th scope="col" class="th-data"></th>
+      <th scope="colgroup" class="grp-assai">ASSAÍ</th>
+      <th scope="colgroup" class="grp-ifood-part">IFOOD / ASSAÍ</th>
+      <th scope="colgroup" class="grp-ifood" colspan="3">IFOOD</th>
+    </tr>
+    <tr class="col-row">
+      <th scope="col" class="th-data">MÊS</th>
+      <th scope="col" class="grp-assai">VENDA BRUTA</th>
+      <th scope="col" class="grp-ifood-part">PARTICIPAÇÃO</th>
+      <th scope="col" class="grp-ifood">VENDA BRUTA</th>
+      <th scope="col" class="grp-ifood">PEDIDOS</th>
+      <th scope="col" class="grp-ifood">TKT.MÉDIO</th>
+    </tr>
+  </thead>
+  <tbody id="annual-body">
+    <!-- linhas injetadas por JS -->
+  </tbody>
+  <tfoot>
+    <tr class="total-row">
+      <th scope="row" class="cell-data">TOTAL ANO:</th>
+      <td class="cell-assai" id="year-tot-assai">R$ 0,00</td>
+      <td class="cell-part" id="year-tot-part">0,00%</td>
+      <td class="cell-ifood-venda" id="year-tot-ifood">R$ 0,00</td>
+      <td class="cell-pedidos" id="year-tot-pedidos">0</td>
+      <td class="cell-tkt" id="year-tot-tkt">R$ 0,00</td>
+    </tr>
+  </tfoot>
+</table>
+</div>
+
+<table class="summary" aria-label="Resumo geral do ano">
+  <caption class="sr-only">Resumo geral de vendas do ano</caption>
+  <tbody>
+    <tr>
+      <th scope="row">VENDA TOTAL (ANO)</th>
+      <td id="year-sum-venda">R$ 0,00</td>
+    </tr>
+    <tr>
+      <th scope="row">MÉDIA</th>
+      <td id="year-sum-media">R$ 0,00</td>
+    </tr>
+    <tr>
+      <th scope="row">PEDIDOS</th>
+      <td id="year-sum-pedidos">0</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="goal-box" style="max-width:520px;">
+  <h3>Participação iFood/Assaí — comparativo mensal</h3>
+  <canvas id="annual-chart" height="180"></canvas>
+</div>
+
+</div>
+</div>
+
+<div class="instructions" id="instrucoes">
+  <strong>Relatório Diário:</strong> as células de venda bruta (Assaí e iFood) e pedidos são editáveis:
+  clique e digite o novo valor (basta digitar o número, ex: 950000,50 — o "R$" é aplicado
+  automaticamente ao sair da célula). Se você apagar o conteúdo de uma célula, ela é
+  <strong>zerada automaticamente</strong>. As células com 🔒 (participação e ticket médio) são
+  calculadas automaticamente e não podem ser editadas. Use o campo <strong>Mês/Ano</strong>
+  para trocar o mês exibido — o calendário se ajusta sozinho (dias e dias da semana corretos
+  do mês escolhido). <strong>Resumo Anual:</strong> mostra a soma de todas as vendas de cada
+  mês do ano selecionado (é somente leitura — os valores vêm dos dados lançados na aba
+  Relatório Diário). Use o campo <strong>Ano</strong> para trocar o ano exibido, podendo
+  selecionar o ano vigente. Use Tab / Shift+Tab para navegar entre as células com o teclado.
+  <br><br>
+  <strong>Lançamento rápido:</strong> pressione <strong>Enter</strong> ou as setas
+  <strong>↓ / ↑</strong> para pular para a mesma coluna no dia seguinte/anterior sem usar o
+  mouse. Você também pode <strong>colar uma coluna de valores copiada do Excel</strong>
+  diretamente numa célula: os valores são distribuídos automaticamente dia a dia a partir
+  da célula focada. Os dados são <strong>salvos automaticamente no navegador</strong> (veja o
+  indicador ao lado dos botões) — use <strong>Exportar backup (JSON)</strong> periodicamente
+  para guardar uma cópia de segurança, e <strong>Importar backup</strong> para restaurar ou
+  mesclar dados de outro computador. <strong>Exportar CSV</strong> gera uma planilha do mês
+  exibido, compatível com Excel/Google Sheets.
+  <br><br>
+  <strong>Novidades:</strong> use <strong>↩️ Desfazer</strong> (ou Ctrl+Z) para reverter a
+  última edição. Células destacadas em amarelo indicam um <strong>valor fora do padrão</strong>
+  comparado à média dos últimos dias — vale conferir se não é erro de digitação. Defina uma
+  <strong>meta mensal</strong> para acompanhar o progresso com a barra abaixo do resumo. O
+  <strong>log de edições</strong> mostra quem alterou o quê e quando. Em
+  <strong>🔗 Sincronização entre dispositivos</strong> você pode conectar um banco Firebase
+  Realtime Database (gratuito) para acessar os mesmos dados do celular e do computador — sem
+  configurar, o relatório continua funcionando normalmente, salvo apenas neste navegador. Na
+  aba <strong>Resumo Anual</strong>, um gráfico mostra a evolução da participação iFood/Assaí
+  mês a mês.
+</div>
+
+<p aria-live="polite" class="sr-only" id="live-region"></p>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script>
+(function(){
+  // ---- Dados originais extraídos da planilha (julho/2026) ----
+  // chave: "AAAA-MM"  valor: { dia: [vendaBrutaAssai, vendaBrutaIfood, pedidosIfood] }
+  const MONTH_DATA = {
+    "2026-07": {
+      1:[953659.78,129525.71,486],   2:[1079660.35,136889.13,522],
+      3:[1091767.60,140323.51,535],  4:[1261974.03,110279.30,445],
+      5:[674905.91,55210.33,255],    6:[817785.45,110834.06,456],
+      7:[852744.82,146784.11,598],   8:[905700.36,127292.85,554],
+      9:[963924.17,134527.38,537],   10:[900927.15,118767.54,461],
+      11:[998879.88,109258.84,450],  12:[713445.95,68019.28,275],
+      13:[449525.09,137705.38,523],  14:[38599.36,38338.09,122],
+      15:[292812.70,22829.30,118],   16:[648869.54,139776.32,549],
+      17:[658779.23,110891.18,476],  18:[733143.56,116524.67,383],
+      19:[417872.49,48561.20,222],   20:[601026.89,99141.05,439],
+      21:[740828.49,83337.54,364],   22:[618786.49,93113.29,381],
+      23:[662704.64,100538.29,425],  24:[667546.33,101100.13,440]
+    }
+  };
+
+  // ---- Persistência local: mescla dados salvos no navegador com os dados originais ----
+  const STORAGE_KEY = "relatorio-vendas-assai-ifood:v1";
+  const GOALS_KEY = "relatorio-vendas-metas:v1";
+  const LOG_KEY = "relatorio-vendas-log:v1";
+  const USER_KEY = "relatorio-vendas-usuario:v1";
+  const SYNC_KEY = "relatorio-vendas-sync-config:v1";
+
+  let MONTH_GOALS = {};
+  let EDIT_LOG = [];
+  let SYNC_CONFIG = null; // {dbUrl, secret}
+  const UNDO_STACK = [];
+
+  (function loadFromStorage(){
+    try{
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      Object.keys(saved).forEach(monthKey => {
+        MONTH_DATA[monthKey] = Object.assign({}, MONTH_DATA[monthKey] || {}, saved[monthKey]);
+      });
+    }catch(e){ console.warn("Não foi possível carregar dados salvos:", e); }
+    try{ MONTH_GOALS = JSON.parse(localStorage.getItem(GOALS_KEY) || "{}"); }catch(e){ MONTH_GOALS = {}; }
+    try{ EDIT_LOG = JSON.parse(localStorage.getItem(LOG_KEY) || "[]"); }catch(e){ EDIT_LOG = []; }
+    try{ SYNC_CONFIG = JSON.parse(localStorage.getItem(SYNC_KEY) || "null"); }catch(e){ SYNC_CONFIG = null; }
+  })();
+
+  // ---- Usuário atual (para o log de edições) ----
+  function getUserName(){
+    return localStorage.getItem(USER_KEY) || null;
+  }
+  function ensureUserName(){
+    let name = getUserName();
+    if(!name){
+      name = prompt("Como você quer se identificar nos lançamentos? (ex: seu nome)", "");
+      name = (name || "").trim() || "Anônimo";
+      localStorage.setItem(USER_KEY, name);
+    }
+    return name;
+  }
+  function setUserName(name){
+    localStorage.setItem(USER_KEY, name);
+    updateUserBadge();
+  }
+  function updateUserBadge(){
+    const el = document.getElementById("user-name-display");
+    if(el) el.textContent = getUserName() || "—";
+  }
+
+  // ---- Log de edições (mantém as últimas 200) ----
+  function pushLog(entry){
+    EDIT_LOG.unshift(Object.assign({ts: new Date().toISOString(), user: getUserName() || "Anônimo"}, entry));
+    if(EDIT_LOG.length > 200) EDIT_LOG.length = 200;
+    localStorage.setItem(LOG_KEY, JSON.stringify(EDIT_LOG));
+    renderLog();
+  }
+  function renderLog(){
+    const list = document.getElementById("log-list");
+    if(!list) return;
+    const recent = EDIT_LOG.slice(0, 20);
+    if(recent.length === 0){
+      list.innerHTML = '<div class="log-entry">Nenhuma edição registrada ainda.</div>';
+      return;
+    }
+    list.innerHTML = recent.map(e => {
+      const d = new Date(e.ts);
+      const dateStr = d.toLocaleString("pt-BR");
+      const fieldLabel = fieldNames[e.field] || e.field;
+      return `<div class="log-entry"><b>${e.user}</b> — ${fieldLabel}, dia ${e.day} (${e.monthKey}): "${e.oldVal}" → "${e.newVal}" <br><span style="color:#999">${dateStr}</span></div>`;
+    }).join("");
+  }
+
+  // ---- Meta mensal / barra de progresso ----
+  function saveGoal(monthKey, value){
+    MONTH_GOALS[monthKey] = value;
+    localStorage.setItem(GOALS_KEY, JSON.stringify(MONTH_GOALS));
+  }
+  function renderGoal(){
+    const monthKey = `${currentYear}-${pad2(currentMonth)}`;
+    const goal = MONTH_GOALS[monthKey];
+    const goalInput = document.getElementById("goal-input");
+    const fillEl = document.getElementById("goal-bar-fill");
+    const textEl = document.getElementById("goal-meta-text");
+    if(goalInput) goalInput.value = goal ? goal.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2}) : "";
+    let sumIfood = 0;
+    tbody.querySelectorAll("tr").forEach(tr => {
+      const v = parseNumberBR(tr.querySelector('[data-field="ifood"]').textContent);
+      if(!isNaN(v)) sumIfood += v;
+    });
+    if(!goal){
+      fillEl.style.width = "0%";
+      fillEl.classList.remove("over");
+      textEl.textContent = "Defina uma meta para acompanhar o progresso.";
+      return;
+    }
+    const pctVal = Math.min(100, (sumIfood/goal)*100);
+    fillEl.style.width = pctVal.toFixed(1) + "%";
+    fillEl.classList.toggle("over", sumIfood >= goal);
+    textEl.textContent = `${brl(sumIfood)} de ${brl(goal)} (${pct(Math.min(999,(sumIfood/goal)*100))}) ${sumIfood>=goal ? "🎉 meta atingida!" : ""}`;
+  }
+
+  // ---- Sincronização entre dispositivos via Firebase Realtime Database (REST) ----
+  function syncUrl(path){
+    if(!SYNC_CONFIG || !SYNC_CONFIG.dbUrl) return null;
+    const base = SYNC_CONFIG.dbUrl.replace(/\/$/,"");
+    const auth = SYNC_CONFIG.secret ? `?auth=${encodeURIComponent(SYNC_CONFIG.secret)}` : "";
+    return `${base}/${path}.json${auth}`;
+  }
+  function updateSyncStatusUI(){
+    const el = document.getElementById("sync-status-text");
+    if(!el) return;
+    if(SYNC_CONFIG && SYNC_CONFIG.dbUrl){
+      el.textContent = "🔗 Sincronizado com Firebase";
+      el.className = "sync-status on";
+    } else {
+      el.textContent = "💻 Somente local (não sincronizado)";
+      el.className = "sync-status off";
+    }
+  }
+  async function pushToFirebase(){
+    const url = syncUrl("relatorioVendas");
+    if(!url) return;
+    try{
+      await fetch(url, {
+        method: "PUT",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({dados: MONTH_DATA, metas: MONTH_GOALS, atualizadoEm: new Date().toISOString()})
+      });
+    }catch(e){ console.warn("Falha ao sincronizar (envio):", e); }
+  }
+  async function pullFromFirebase(silent){
+    const url = syncUrl("relatorioVendas");
+    if(!url) return;
+    try{
+      const res = await fetch(url);
+      const json = await res.json();
+      if(json && json.dados){
+        Object.keys(json.dados).forEach(monthKey => {
+          MONTH_DATA[monthKey] = Object.assign({}, MONTH_DATA[monthKey] || {}, json.dados[monthKey]);
+        });
+      }
+      if(json && json.metas){
+        MONTH_GOALS = Object.assign({}, MONTH_GOALS, json.metas);
+        localStorage.setItem(GOALS_KEY, JSON.stringify(MONTH_GOALS));
+      }
+      persistToStorage();
+      generateRows(currentYear, currentMonth);
+      if(!silent) liveRegion.textContent = "Sincronização concluída.";
+    }catch(e){
+      console.warn("Falha ao sincronizar (recebimento):", e);
+      if(!silent) alert("Não foi possível sincronizar. Verifique a URL do banco e sua conexão.");
+    }
+  }
+
+  let saveTimer = null;
+  function persistToStorage(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(MONTH_DATA));
+      setSaveStatus("saved");
+      if(SYNC_CONFIG && SYNC_CONFIG.dbUrl) pushToFirebase();
+    }catch(e){
+      console.warn("Não foi possível salvar dados:", e);
+      setSaveStatus("error");
+    }
+  }
+  function schedulePersist(){
+    setSaveStatus("saving");
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(persistToStorage, 400);
+  }
+  function setSaveStatus(state){
+    const el = document.getElementById("save-status");
+    if(!el) return;
+    if(state === "saving"){ el.textContent = "Salvando…"; el.className = "save-status saving"; }
+    else if(state === "saved"){ el.textContent = "✓ Salvo neste navegador"; el.className = "save-status saved"; }
+    else if(state === "error"){ el.textContent = "⚠ Erro ao salvar"; el.className = "save-status error"; }
+  }
+
+  const WEEKDAYS = ["dom","seg","ter","qua","qui","sex","sáb"];
+  const pad2 = n => String(n).padStart(2,"0");
+
+  const brl = n => "R$ " + n.toLocaleString("pt-BR", {minimumFractionDigits:2, maximumFractionDigits:2});
+  const pct = n => n.toLocaleString("pt-BR", {minimumFractionDigits:2, maximumFractionDigits:2}) + "%";
+
+  function parseNumberBR(str){
+    if(str === null || str === undefined) return NaN;
+    let s = String(str).trim();
+    s = s.replace(/^R\$\s*/i, "").replace(/%/g,"").trim();
+    if(s === "") return NaN;
+    s = s.replace(/\./g, "").replace(",", ".");
+    const v = parseFloat(s);
+    return isNaN(v) ? NaN : v;
+  }
+
+  function monthNamePt(year, month){
+    return new Date(year, month-1, 1).toLocaleDateString("pt-BR", {month:"long"});
+  }
+
+  const tbody = document.getElementById("table-body");
+  const liveRegion = document.getElementById("live-region");
+  const monthPicker = document.getElementById("month-picker");
+  const monthLabelEl = document.getElementById("month-label");
+  const monthBadgeEl = document.getElementById("month-badge");
+  const captionEl = document.getElementById("table-caption");
+
+  const yearPicker = document.getElementById("year-picker");
+  const yearBadgeEl = document.getElementById("year-badge");
+  const annualBody = document.getElementById("annual-body");
+  const annualCaptionEl = document.getElementById("annual-caption");
+
+  const tabDaily = document.getElementById("tab-daily");
+  const tabAnnual = document.getElementById("tab-annual");
+  const panelDaily = document.getElementById("panel-daily");
+  const panelAnnual = document.getElementById("panel-annual");
+
+  let currentYear, currentMonth;
+
+  const fieldNames = {assai:"Venda bruta Assaí", part:"Participação iFood/Assaí", ifood:"Venda bruta iFood", pedidos:"Pedidos iFood", tkt:"Ticket médio iFood"};
+
+  function applyAccessibleLabels(){
+    tbody.querySelectorAll("td[data-field]").forEach(td => {
+      const rowLabel = td.parentElement.querySelector("th").textContent;
+      const isLocked = td.classList.contains("cell-locked");
+      td.setAttribute("role","textbox");
+      td.setAttribute("aria-readonly", isLocked ? "true" : "false");
+      const suffix = isLocked ? " (calculado automaticamente, não editável)" : "";
+      td.setAttribute("aria-label", `${fieldNames[td.dataset.field]} — ${rowLabel}${suffix}`);
+    });
+  }
+
+  // ---- Gera as linhas da tabela para o mês/ano informado ----
+  function generateRows(year, month){
+    currentYear = year;
+    currentMonth = month;
+    tbody.innerHTML = "";
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const monthKey = `${year}-${pad2(month)}`;
+    const monthData = MONTH_DATA[monthKey] || {};
+
+    for(let day = 1; day <= daysInMonth; day++){
+      const date = new Date(year, month-1, day);
+      const wd = WEEKDAYS[date.getDay()];
+      const dateLabel = `${pad2(day)}/${pad2(month)}/${String(year).slice(-2)} - ${wd}`;
+      const rec = monthData[day];
+      const hasData = !!rec;
+      const assaiVal = hasData ? rec[0] : null;
+      const ifoodVal = hasData ? rec[1] : null;
+      const pedidosVal = hasData ? rec[2] : null;
+      const partVal = (hasData && assaiVal !== 0) ? (ifoodVal/assaiVal*100) : null;
+      const tktVal = (hasData && pedidosVal !== 0) ? (ifoodVal/pedidosVal) : null;
+
+      const tr = document.createElement("tr");
+      tr.dataset.day = day;
+      const isWeekend = (date.getDay() === 0 || date.getDay() === 6);
+      if(isWeekend) tr.classList.add("weekend-row");
+      const now = new Date();
+      if(now.getFullYear() === year && now.getMonth()+1 === month && now.getDate() === day){
+        tr.classList.add("today-row");
+      }
+      tr.innerHTML = `
+        <th scope="row" class="cell-data">${dateLabel}</th>
+        <td class="cell-assai" contenteditable="true" data-type="currency" data-field="assai">${hasData ? brl(assaiVal) : ""}</td>
+        <td class="cell-part cell-locked" contenteditable="false" data-type="percent" data-field="part">${partVal !== null ? pct(partVal) : ""}</td>
+        <td class="cell-ifood-venda" contenteditable="true" data-type="currency" data-field="ifood">${hasData ? brl(ifoodVal) : ""}</td>
+        <td class="cell-pedidos" contenteditable="true" data-type="integer" data-field="pedidos">${hasData ? pedidosVal.toLocaleString("pt-BR") : ""}</td>
+        <td class="cell-tkt cell-locked" contenteditable="false" data-type="currency" data-field="tkt">${tktVal !== null ? brl(tktVal) : ""}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    applyAccessibleLabels();
+
+    const mName = monthNamePt(year, month).toUpperCase();
+    monthLabelEl.textContent = mName;
+    monthBadgeEl.textContent = `${mName} ${year}`;
+    captionEl.textContent = `Vendas diárias de ${monthNamePt(year, month)} de ${year} — comparação Assaí e iFood`;
+
+    recalcTotals();
+    renderGoal();
+    renderLog();
+    liveRegion.textContent = `Calendário atualizado para ${monthNamePt(year, month)} de ${year}.`;
+  }
+
+  // ---- Formata/zera uma célula editável individual ao perder o foco ----
+  function formatCellOnBlur(cell){
+    const raw = cell.textContent.trim();
+    const type = cell.dataset.type;
+
+    if(raw === ""){
+      // Apagar o conteúdo zera o valor automaticamente
+      cell.textContent = (type === "integer") ? "0" : brl(0);
+      cell.setAttribute("aria-invalid","false");
+      return;
+    }
+
+    const v = parseNumberBR(raw);
+    if(isNaN(v)){
+      cell.setAttribute("aria-invalid","true");
+      return;
+    }
+    cell.setAttribute("aria-invalid","false");
+    cell.textContent = (type === "integer") ? Math.round(v).toLocaleString("pt-BR") : brl(v);
+  }
+
+  // ---- Recalcula participação e ticket médio de UMA linha ----
+  function recalcRow(tr){
+    const assaiCell = tr.querySelector('[data-field="assai"]');
+    const ifoodCell = tr.querySelector('[data-field="ifood"]');
+    const pedidosCell = tr.querySelector('[data-field="pedidos"]');
+    const partCell = tr.querySelector('[data-field="part"]');
+    const tktCell = tr.querySelector('[data-field="tkt"]');
+    if(!assaiCell) return;
+
+    const assaiVal = parseNumberBR(assaiCell.textContent);
+    const ifoodVal = parseNumberBR(ifoodCell.textContent);
+    const pedidosVal = parseNumberBR(pedidosCell.textContent);
+
+    if(!isNaN(assaiVal) && !isNaN(ifoodVal)){
+      partCell.textContent = assaiVal !== 0 ? pct((ifoodVal/assaiVal)*100) : "0,00%";
+    }
+    if(!isNaN(ifoodVal) && !isNaN(pedidosVal)){
+      tktCell.textContent = pedidosVal !== 0 ? brl(ifoodVal/pedidosVal) : "R$ 0,00";
+    }
+  }
+
+  // ---- Salva os valores atuais da linha editada de volta no armazenamento MONTH_DATA ----
+  function syncRowToStore(tr){
+    const day = parseInt(tr.dataset.day, 10);
+    if(!day) return;
+    const assaiVal = parseNumberBR(tr.querySelector('[data-field="assai"]').textContent);
+    const ifoodVal = parseNumberBR(tr.querySelector('[data-field="ifood"]').textContent);
+    const pedidosVal = parseNumberBR(tr.querySelector('[data-field="pedidos"]').textContent);
+
+    const monthKey = `${currentYear}-${pad2(currentMonth)}`;
+    if(!MONTH_DATA[monthKey]) MONTH_DATA[monthKey] = {};
+    MONTH_DATA[monthKey][day] = [
+      isNaN(assaiVal) ? 0 : assaiVal,
+      isNaN(ifoodVal) ? 0 : ifoodVal,
+      isNaN(pedidosVal) ? 0 : pedidosVal
+    ];
+  }
+
+  // ---- Recalcula totais/resumo a partir de todas as linhas (células vazias contam como 0) ----
+  function recalcTotals(){
+    let sumAssai = 0, sumIfood = 0, sumPedidos = 0;
+    tbody.querySelectorAll("tr").forEach(tr => {
+      const assaiVal = parseNumberBR(tr.querySelector('[data-field="assai"]').textContent);
+      const ifoodVal = parseNumberBR(tr.querySelector('[data-field="ifood"]').textContent);
+      const pedidosVal = parseNumberBR(tr.querySelector('[data-field="pedidos"]').textContent);
+      if(!isNaN(assaiVal)) sumAssai += assaiVal;
+      if(!isNaN(ifoodVal)) sumIfood += ifoodVal;
+      if(!isNaN(pedidosVal)) sumPedidos += pedidosVal;
+    });
+
+    document.getElementById("tot-assai").textContent = brl(sumAssai);
+    document.getElementById("tot-part").textContent = sumAssai !== 0 ? pct((sumIfood/sumAssai)*100) : "0,00%";
+    document.getElementById("tot-ifood").textContent = brl(sumIfood);
+    document.getElementById("tot-pedidos").textContent = sumPedidos.toLocaleString("pt-BR");
+    document.getElementById("tot-tkt").textContent = sumPedidos !== 0 ? brl(sumIfood/sumPedidos) : "R$ 0,00";
+
+    document.getElementById("sum-venda").textContent = brl(sumIfood);
+    document.getElementById("sum-media").textContent = sumPedidos !== 0 ? brl(sumIfood/sumPedidos) : "R$ 0,00";
+    document.getElementById("sum-pedidos").textContent = sumPedidos.toLocaleString("pt-BR");
+  }
+
+  // ---- Eventos de edição (delegados no tbody, funcionam para linhas geradas dinamicamente) ----
+  tbody.addEventListener("blur", (e) => {
+    const cell = e.target;
+    if(!cell.matches('[contenteditable="true"]')) return;
+    const tr = cell.closest("tr");
+    const field = cell.dataset.field;
+    const day = parseInt(tr.dataset.day, 10);
+    const monthKey = `${currentYear}-${pad2(currentMonth)}`;
+    const oldRec = (MONTH_DATA[monthKey] && MONTH_DATA[monthKey][day]) || null;
+    const fieldIdx = {assai:0, ifood:1, pedidos:2}[field];
+    const oldRawVal = oldRec ? oldRec[fieldIdx] : 0;
+
+    formatCellOnBlur(cell);
+    recalcRow(tr);
+    syncRowToStore(tr);
+    recalcTotals();
+    renderGoal();
+    schedulePersist();
+
+    const newRec = MONTH_DATA[monthKey][day];
+    const newRawVal = newRec[fieldIdx];
+    if(fieldIdx !== undefined && oldRawVal !== newRawVal){
+      UNDO_STACK.push({monthKey, day, field, fieldIdx, oldVal: oldRawVal});
+      if(UNDO_STACK.length > 30) UNDO_STACK.shift();
+      pushLog({
+        monthKey, day, field,
+        oldVal: field === "pedidos" ? oldRawVal : brl(oldRawVal),
+        newVal: field === "pedidos" ? newRawVal : brl(newRawVal)
+      });
+    }
+    checkOutlier(cell, field, tr, day, newRawVal);
+    liveRegion.textContent = "Valor atualizado e totais recalculados.";
+  }, true);
+
+  // ---- Alerta de valor fora do padrão: compara com a média dos últimos 7 dias com dados ----
+  function checkOutlier(cell, field, tr, day, value){
+    cell.classList.remove("cell-outlier");
+    cell.removeAttribute("title");
+    if(field !== "assai" && field !== "ifood") return;
+    if(!value) return;
+    const monthKey = `${currentYear}-${pad2(currentMonth)}`;
+    const data = MONTH_DATA[monthKey] || {};
+    const fieldIdx = field === "assai" ? 0 : 1;
+    const samples = [];
+    for(let d = day-1; d >= 1 && samples.length < 7; d--){
+      const rec = data[d];
+      if(rec && rec[fieldIdx]) samples.push(rec[fieldIdx]);
+    }
+    if(samples.length < 3) return;
+    const avg = samples.reduce((a,b)=>a+b,0) / samples.length;
+    if(avg === 0) return;
+    const deviation = Math.abs(value - avg) / avg;
+    if(deviation > 0.5){
+      cell.classList.add("cell-outlier");
+      cell.title = `Valor ${deviation > 1 ? "muito " : ""}fora do padrão dos últimos dias (média recente: ${brl(avg)}). Confira se não é erro de digitação.`;
+      liveRegion.textContent += " Atenção: valor lançado destoa da média dos últimos dias.";
+    }
+  }
+
+  // ---- Desfazer última edição (botão ou Ctrl+Z) ----
+  function undoLastEdit(){
+    const last = UNDO_STACK.pop();
+    if(!last) { liveRegion.textContent = "Não há edições para desfazer."; return; }
+    if(!MONTH_DATA[last.monthKey]) MONTH_DATA[last.monthKey] = {};
+    if(!MONTH_DATA[last.monthKey][last.day]) MONTH_DATA[last.monthKey][last.day] = [0,0,0];
+    MONTH_DATA[last.monthKey][last.day][last.fieldIdx] = last.oldVal;
+    if(last.monthKey === `${currentYear}-${pad2(currentMonth)}`){
+      generateRows(currentYear, currentMonth);
+    }
+    schedulePersist();
+    pushLog({monthKey:last.monthKey, day:last.day, field:last.field, oldVal:"(desfeito)", newVal: last.field === "pedidos" ? last.oldVal : brl(last.oldVal)});
+    liveRegion.textContent = "Última edição desfeita.";
+  }
+  document.getElementById("btn-undo").addEventListener("click", undoLastEdit);
+  document.addEventListener("keydown", (e) => {
+    if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z"){
+      e.preventDefault();
+      undoLastEdit();
+    }
+  });
+
+  // ---- Navegação rápida entre células: Enter/setas move para a mesma coluna na linha seguinte/anterior ----
+  function focusCellInRow(tr, field){
+    if(!tr) return false;
+    const cell = tr.querySelector(`[data-field="${field}"]`);
+    if(cell && cell.isContentEditable){
+      cell.focus();
+      document.execCommand && placeCaretAtEnd(cell);
+      return true;
+    }
+    return false;
+  }
+  function placeCaretAtEnd(el){
+    try{
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      range.collapse(false);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }catch(e){}
+  }
+
+  tbody.addEventListener("keydown", (e) => {
+    if(!e.target.matches('[contenteditable="true"]')) return;
+    const field = e.target.dataset.field;
+    const tr = e.target.closest("tr");
+
+    if(e.key === "Enter"){
+      e.preventDefault();
+      e.target.blur();
+      // Move para a mesma coluna no dia seguinte, agilizando lançamento em sequência
+      focusCellInRow(tr.nextElementSibling, field);
+    } else if(e.key === "ArrowDown"){
+      e.preventDefault();
+      e.target.blur();
+      focusCellInRow(tr.nextElementSibling, field);
+    } else if(e.key === "ArrowUp"){
+      e.preventDefault();
+      e.target.blur();
+      focusCellInRow(tr.previousElementSibling, field);
+    }
+  });
+
+  // ---- Colar vários valores de uma vez (ex.: coluna copiada do Excel) ----
+  // Cola a partir da célula focada para baixo, uma linha por valor colado.
+  tbody.addEventListener("paste", (e) => {
+    if(!e.target.matches('[contenteditable="true"]')) return;
+    const text = (e.clipboardData || window.clipboardData).getData("text");
+    if(!text || !text.includes("\n") && !text.includes("\t")){
+      return; // valor único: deixa o comportamento padrão de colar
+    }
+    e.preventDefault();
+    const field = e.target.dataset.field;
+    if(e.target.classList.contains("cell-locked")) return;
+
+    // Extrai apenas a primeira coluna de cada linha colada (compatível com colar do Excel)
+    const values = text.split(/\r\n|\n|\r/).filter(l => l !== "").map(l => l.split("\t")[0]);
+
+    let tr = e.target.closest("tr");
+    values.forEach(val => {
+      if(!tr) return;
+      const cell = tr.querySelector(`[data-field="${field}"]`);
+      if(cell && !cell.classList.contains("cell-locked")){
+        cell.textContent = val.trim();
+        formatCellOnBlur(cell);
+        recalcRow(tr);
+        syncRowToStore(tr);
+      }
+      tr = tr.nextElementSibling;
+    });
+    recalcTotals();
+    schedulePersist();
+    liveRegion.textContent = `${values.length} valores colados a partir do dia focado.`;
+    renderGoal();
+    pushLog({monthKey:`${currentYear}-${pad2(currentMonth)}`, day: e.target.closest("tr").dataset.day, field, oldVal:"(vários)", newVal:`${values.length} valores colados`});
+  });
+
+  // ---- Atalho para trocar o mês/ano exibido ----
+  function todayYearMonth(){
+    const today = new Date();
+    return {year: today.getFullYear(), month: today.getMonth()+1};
+  }
+
+  function applyMonthFromPicker(){
+    const val = monthPicker.value; // formato "AAAA-MM"
+    if(!val) return;
+    const [y, m] = val.split("-").map(Number);
+    generateRows(y, m);
+  }
+
+  document.getElementById("btn-apply-month").addEventListener("click", applyMonthFromPicker);
+  document.getElementById("btn-current-month").addEventListener("click", () => {
+    const {year, month} = todayYearMonth();
+    monthPicker.value = `${year}-${pad2(month)}`;
+    generateRows(year, month);
+  });
+  monthPicker.addEventListener("keydown", (e) => {
+    if(e.key === "Enter") applyMonthFromPicker();
+  });
+  document.getElementById("btn-recalc").addEventListener("click", recalcTotals);
+  document.getElementById("btn-print").addEventListener("click", () => window.print());
+
+  // ---- Backup: exporta todos os dados lançados (todos os meses) em um arquivo JSON ----
+  function downloadFile(filename, content, mime){
+    const blob = new Blob([content], {type: mime});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  document.getElementById("btn-export-json").addEventListener("click", () => {
+    const stamp = new Date().toISOString().slice(0,10);
+    downloadFile(`backup-vendas-${stamp}.json`, JSON.stringify(MONTH_DATA, null, 2), "application/json");
+    liveRegion.textContent = "Backup em JSON exportado.";
+  });
+
+  const fileImport = document.getElementById("file-import");
+  document.getElementById("btn-import-json").addEventListener("click", () => fileImport.click());
+  fileImport.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const incoming = JSON.parse(reader.result);
+        if(typeof incoming !== "object" || incoming === null) throw new Error("formato inválido");
+        const ok = confirm("Importar este backup vai mesclar os dados do arquivo com os dados já lançados (valores do arquivo têm prioridade em caso de conflito). Continuar?");
+        if(!ok) return;
+        Object.keys(incoming).forEach(monthKey => {
+          MONTH_DATA[monthKey] = Object.assign({}, MONTH_DATA[monthKey] || {}, incoming[monthKey]);
+        });
+        persistToStorage();
+        generateRows(currentYear, currentMonth);
+        liveRegion.textContent = "Backup importado e mesclado com sucesso.";
+      }catch(err){
+        alert("Não foi possível ler este arquivo. Verifique se é um backup JSON válido gerado por este relatório.");
+      }
+      fileImport.value = "";
+    };
+    reader.readAsText(file);
+  });
+
+  // ---- Exporta o mês em exibição como CSV (compatível com Excel) ----
+  document.getElementById("btn-export-csv").addEventListener("click", () => {
+    const rows = [["Data","Venda Bruta Assaí","Participação iFood/Assaí","Venda Bruta iFood","Pedidos iFood","Ticket Médio iFood"]];
+    tbody.querySelectorAll("tr").forEach(tr => {
+      const label = tr.querySelector("th").textContent;
+      const assai = tr.querySelector('[data-field="assai"]').textContent.trim();
+      const part = tr.querySelector('[data-field="part"]').textContent.trim();
+      const ifood = tr.querySelector('[data-field="ifood"]').textContent.trim();
+      const pedidos = tr.querySelector('[data-field="pedidos"]').textContent.trim();
+      const tkt = tr.querySelector('[data-field="tkt"]').textContent.trim();
+      rows.push([label, assai, part, ifood, pedidos, tkt]);
+    });
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(";")).join("\r\n");
+    downloadFile(`vendas-${currentYear}-${pad2(currentMonth)}.csv`, "\uFEFF" + csv, "text/csv;charset=utf-8");
+    liveRegion.textContent = "CSV do mês exportado.";
+  });
+
+  // ---- Meta mensal ----
+  document.getElementById("btn-save-goal").addEventListener("click", () => {
+    const raw = document.getElementById("goal-input").value;
+    const v = parseNumberBR(raw);
+    if(isNaN(v) || v < 0){
+      alert("Digite um valor de meta válido, ex: 3000000,00");
+      return;
+    }
+    saveGoal(`${currentYear}-${pad2(currentMonth)}`, v);
+    renderGoal();
+    liveRegion.textContent = "Meta do mês salva.";
+  });
+
+  // ---- Identificação do usuário (para o log de edições) ----
+  updateUserBadge();
+  document.getElementById("btn-change-user").addEventListener("click", () => {
+    const current = getUserName() || "";
+    const name = prompt("Como você quer se identificar nos lançamentos?", current);
+    if(name !== null && name.trim() !== ""){
+      setUserName(name.trim());
+      liveRegion.textContent = "Nome de usuário atualizado.";
+    }
+  });
+  ensureUserName();
+  updateUserBadge();
+
+  // ---- Painel de sincronização (Firebase Realtime Database) ----
+  const syncPanel = document.getElementById("sync-panel");
+  document.getElementById("btn-toggle-sync").addEventListener("click", () => {
+    syncPanel.hidden = !syncPanel.hidden;
+    if(!syncPanel.hidden && SYNC_CONFIG){
+      document.getElementById("sync-db-url").value = SYNC_CONFIG.dbUrl || "";
+      document.getElementById("sync-secret").value = SYNC_CONFIG.secret || "";
+    }
+  });
+  document.getElementById("btn-sync-save-config").addEventListener("click", () => {
+    const dbUrl = document.getElementById("sync-db-url").value.trim();
+    const secret = document.getElementById("sync-secret").value.trim();
+    if(!dbUrl){
+      alert("Informe a URL do Realtime Database (ex: https://seu-projeto-default-rtdb.firebaseio.com).");
+      return;
+    }
+    SYNC_CONFIG = {dbUrl, secret};
+    localStorage.setItem(SYNC_KEY, JSON.stringify(SYNC_CONFIG));
+    updateSyncStatusUI();
+    pullFromFirebase(false).then(() => pushToFirebase());
+  });
+  document.getElementById("btn-sync-now").addEventListener("click", () => {
+    if(!SYNC_CONFIG || !SYNC_CONFIG.dbUrl){
+      alert("Configure e salve a URL de sincronização primeiro.");
+      return;
+    }
+    pullFromFirebase(false);
+  });
+  document.getElementById("btn-sync-disconnect").addEventListener("click", () => {
+    SYNC_CONFIG = null;
+    localStorage.removeItem(SYNC_KEY);
+    updateSyncStatusUI();
+    liveRegion.textContent = "Sincronização desconectada. Os dados continuam salvos localmente.";
+  });
+  updateSyncStatusUI();
+
+  // ---- Resumo Anual: soma todas as vendas de cada mês do ano selecionado ----
+  function generateAnnualSummary(year){
+    annualBody.innerHTML = "";
+    let yearAssai = 0, yearIfood = 0, yearPedidos = 0;
+    const chartLabels = [];
+    const chartData = [];
+
+    for(let month = 1; month <= 12; month++){
+      const monthKey = `${year}-${pad2(month)}`;
+      const monthData = MONTH_DATA[monthKey] || {};
+      let mAssai = 0, mIfood = 0, mPedidos = 0;
+      Object.values(monthData).forEach(rec => {
+        mAssai += rec[0] || 0;
+        mIfood += rec[1] || 0;
+        mPedidos += rec[2] || 0;
+      });
+      const mPart = mAssai !== 0 ? (mIfood/mAssai*100) : 0;
+      const mTkt = mPedidos !== 0 ? (mIfood/mPedidos) : 0;
+
+      yearAssai += mAssai;
+      yearIfood += mIfood;
+      yearPedidos += mPedidos;
+
+      const mName = monthNamePt(year, month);
+      chartLabels.push(mName.charAt(0).toUpperCase()+mName.slice(1,3));
+      chartData.push(Number(mPart.toFixed(2)));
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <th scope="row" class="cell-data">${mName.charAt(0).toUpperCase()+mName.slice(1)}</th>
+        <td class="cell-assai">${brl(mAssai)}</td>
+        <td class="cell-part">${pct(mPart)}</td>
+        <td class="cell-ifood-venda">${brl(mIfood)}</td>
+        <td class="cell-pedidos">${mPedidos.toLocaleString("pt-BR")}</td>
+        <td class="cell-tkt">${brl(mTkt)}</td>
+      `;
+      annualBody.appendChild(tr);
+    }
+
+    document.getElementById("year-tot-assai").textContent = brl(yearAssai);
+    document.getElementById("year-tot-part").textContent = yearAssai !== 0 ? pct((yearIfood/yearAssai)*100) : "0,00%";
+    document.getElementById("year-tot-ifood").textContent = brl(yearIfood);
+    document.getElementById("year-tot-pedidos").textContent = yearPedidos.toLocaleString("pt-BR");
+    document.getElementById("year-tot-tkt").textContent = yearPedidos !== 0 ? brl(yearIfood/yearPedidos) : "R$ 0,00";
+
+    document.getElementById("year-sum-venda").textContent = brl(yearIfood);
+    document.getElementById("year-sum-media").textContent = yearPedidos !== 0 ? brl(yearIfood/yearPedidos) : "R$ 0,00";
+    document.getElementById("year-sum-pedidos").textContent = yearPedidos.toLocaleString("pt-BR");
+
+    yearBadgeEl.textContent = `ANO ${year}`;
+    annualCaptionEl.textContent = `Vendas somadas por mês em ${year} — comparação Assaí e iFood`;
+    renderAnnualChart(chartLabels, chartData);
+    liveRegion.textContent = `Resumo anual atualizado para ${year}.`;
+  }
+
+  // ---- Gráfico comparativo de participação iFood/Assaí por mês ----
+  let annualChartInstance = null;
+  function renderAnnualChart(labels, data){
+    const canvas = document.getElementById("annual-chart");
+    if(!canvas || typeof Chart === "undefined") return;
+    if(annualChartInstance) annualChartInstance.destroy();
+    annualChartInstance = new Chart(canvas.getContext("2d"), {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          label: "Participação iFood/Assaí (%)",
+          data,
+          backgroundColor: "#ed7d31",
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { callback: v => v + "%" } }
+        }
+      }
+    });
+  }
+
+
+
+  function applyYearFromPicker(){
+    const y = parseInt(yearPicker.value, 10);
+    if(!y) return;
+    generateAnnualSummary(y);
+  }
+
+  document.getElementById("btn-apply-year").addEventListener("click", applyYearFromPicker);
+  document.getElementById("btn-current-year").addEventListener("click", () => {
+    const {year} = todayYearMonth();
+    yearPicker.value = year;
+    generateAnnualSummary(year);
+  });
+  yearPicker.addEventListener("keydown", (e) => {
+    if(e.key === "Enter") applyYearFromPicker();
+  });
+
+  // ---- Alternância entre as abas Relatório Diário / Resumo Anual ----
+  function switchTab(which){
+    const isDaily = which === "daily";
+    panelDaily.hidden = !isDaily;
+    panelAnnual.hidden = isDaily;
+    tabDaily.setAttribute("aria-selected", isDaily ? "true" : "false");
+    tabAnnual.setAttribute("aria-selected", isDaily ? "false" : "true");
+    tabDaily.tabIndex = isDaily ? 0 : -1;
+    tabAnnual.tabIndex = isDaily ? -1 : 0;
+    tabDaily.classList.toggle("active", isDaily);
+    tabAnnual.classList.toggle("active", !isDaily);
+    if(!isDaily){
+      generateAnnualSummary(parseInt(yearPicker.value, 10) || todayYearMonth().year);
+      tabAnnual.focus();
+    } else {
+      tabDaily.focus();
+    }
+  }
+
+  tabDaily.addEventListener("click", () => switchTab("daily"));
+  tabAnnual.addEventListener("click", () => switchTab("annual"));
+  [tabDaily, tabAnnual].forEach(tab => {
+    tab.addEventListener("keydown", (e) => {
+      if(e.key === "ArrowRight" || e.key === "ArrowLeft"){
+        e.preventDefault();
+        switchTab(tab === tabDaily ? "annual" : "daily");
+      }
+    });
+  });
+
+  // ---- Inicialização: calendário do mês vigente e ano vigente ----
+  const {year: initYear, month: initMonth} = todayYearMonth();
+  monthPicker.value = `${initYear}-${pad2(initMonth)}`;
+  yearPicker.value = initYear;
+  generateRows(initYear, initMonth);
+  setSaveStatus("saved");
+  if(SYNC_CONFIG && SYNC_CONFIG.dbUrl){
+    pullFromFirebase(true);
+  }
+})();
+</script>
+
+</body>
+</html>
