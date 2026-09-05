@@ -698,6 +698,13 @@
     try{ MONTH_GOALS = JSON.parse(localStorage.getItem(GOALS_KEY) || "{}"); }catch(e){ MONTH_GOALS = {}; }
     try{ EDIT_LOG = JSON.parse(localStorage.getItem(LOG_KEY) || "[]"); }catch(e){ EDIT_LOG = []; }
     try{ SYNC_CONFIG = JSON.parse(localStorage.getItem(SYNC_KEY) || "null"); }catch(e){ SYNC_CONFIG = null; }
+    // Se ainda não foi configurada nenhuma sincronização neste dispositivo,
+    // já conecta automaticamente no banco central (escala-dinamica) usado
+    // pelo restante do PAINEL, em vez de deixar "somente local".
+    if(!SYNC_CONFIG || !SYNC_CONFIG.dbUrl){
+      SYNC_CONFIG = { dbUrl: "https://escala-dinamica-default-rtdb.firebaseio.com", secret: "" };
+      localStorage.setItem(SYNC_KEY, JSON.stringify(SYNC_CONFIG));
+    }
   })();
 
   // ---- Usuário atual (para o log de edições) ----
