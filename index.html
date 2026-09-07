@@ -880,18 +880,27 @@
     const url = syncUrl("relatorioVendas");
     if(!url) return;
     try{
-      await fetch(url, {
+      const res = await fetch(url, {
         method: "PUT",
         headers: {"Content-Type":"application/json"},
         body: JSON.stringify({dados: MONTH_DATA, metas: MONTH_GOALS, atualizadoEm: new Date().toISOString()})
       });
-    }catch(e){ console.warn("Falha ao sincronizar (envio):", e); }
+      if(!res.ok){
+        const bodyText = await res.text().catch(() => "");
+        console.error(`Falha ao sincronizar (envio): HTTP ${res.status} — ${bodyText}`);
+        setSaveStatus("error");
+      }
+    }catch(e){ console.warn("Falha ao sincronizar (envio):", e); setSaveStatus("error"); }
   }
   async function pullFromFirebase(silent){
     const url = syncUrl("relatorioVendas");
     if(!url) return;
     try{
       const res = await fetch(url);
+      if(!res.ok){
+        const bodyText = await res.text().catch(() => "");
+        throw new Error(`HTTP ${res.status} — ${bodyText}`);
+      }
       const json = await res.json();
       if(json && json.dados){
         Object.keys(json.dados).forEach(monthKey => {
@@ -907,7 +916,7 @@
       if(!silent) liveRegion.textContent = "Sincronização concluída.";
     }catch(e){
       console.warn("Falha ao sincronizar (recebimento):", e);
-      if(!silent) alert("Não foi possível sincronizar. Verifique a URL do banco e sua conexão.");
+      if(!silent) alert("Não foi possível sincronizar. Detalhe técnico: " + e.message);
     }
   }
 
